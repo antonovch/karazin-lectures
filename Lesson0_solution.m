@@ -3,13 +3,11 @@
 % 
 % 
 % 
-% You load it into the workspace:
+% |lesson0.mat| file has the table from the |.xlsx| file as Matlab's matrix 
+% (excluding the third column). First, you load it into the workspace:
 
 load('datafiles/lesson0.mat','data');
 size(data)
-%% 
-% Note that |readtable| outputs a table object, instead of a matrix, which provides 
-% more usability for larger dimension datasets.
 % Task 1. Make a polar plot of the 'before' data (second column) on a Cartesian grid.
 
 Rmin = data(1,1);
