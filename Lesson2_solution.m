@@ -22,8 +22,7 @@ geom_names = {'post','post_inverted','mid_corner_circ',...
 % On Unix
 
 list = ls('datafiles/simdata/*.mat'); % note file path may vary
-list = split(list);
-list(end) = []; % delete final empty array
+list = split(list(1:end-1)); % remove newline character in the end
 %% 
 % On Windows
 
@@ -54,14 +53,32 @@ for i = 1:length(list)
     f = load(strip(list{i})); % extra strip for safety
     data = [data, f.data]; % ignore the warning
 end
-% Task 2a. For speed pre-load all the files into memory.
+%% 
+% An alternative and somewhat quicker (therefore better) way of achieving the 
+% same. Notice, no warning this time
 
+data = cell(size(list));
+for i = 1:length(list)
+    f = load(strip(list{i})); % extra strip for safety
+    data{i} = f.data; 
+end
+data = [data{:}];
+% Task 2a. For speed pre-load all the files into memory (possible for relatively small amounts of data).
 
+% pre-allocate resources, by creating length(list) structures
+f = struct('name', list, 'data', cell(size(list)), 'geom', cell(size(list)), 'wl', cell(size(list)));
+for i = 1:length(f)
+    tmp = load(f(i).name); 
+    f(i).data = tmp.data;
+    f(i).geom = tmp.geom;
+    f(i).wl = tmp.wl;
+end
+% now, all data is in RAM, instead of being in disk
 % Task 3. Plot phase scatter plots for all the data as in Lesson 1.
 
 % Same as in Lesson 1 (Tasks 2 and 3), but define phase as angle of data and amp as abs of
 % data.
-wavelength = f.wl;
+wavelength = f(1).wl;
 phase = mod(angle(data),2*pi); % same as atan(imag(data)./real(data))
 amp = abs(data); % same as sqrt(real(data).^ + imag(data).^2)
 [~, mid] = min(abs(wavelength - mean(wavelength)));
@@ -86,17 +103,22 @@ xlabel('\phi_0, [\pi]'); ylabel('\Delta\phi, [\pi]')
 % data_inverted array, instead of data.
 % Hint 2: make same steps as in Task 3 (amp not needed, as color will be
 % fixed)
-data = [];
-data_inverted = [];
+[data, data_inverted] = deal(cell(size(list)));
 for i = 1:length(list)
     f = load(strip(list{i})); % extra strip for safety
     if contains(list{i},'inverted')
-        data_inverted = [data_inverted, f.data]; % ignore the warning
+        data_inverted{i} = f.data;
     else
-        data = [data, f.data]; % ignore the warning
+        data{i} = f.data;
     end
 end
-wavelength = f.wl;
+data = [data{:}];
+data_inverted = [data_inverted{:}];
+    % what we want ->> TO DO AT HOME
+%     [phi0,delta_phi,ave] = get_phi_delta_phi(data);
+%     [phi0_inverted,delta_phi_inverted,ave_inverted] = get_phi_delta_phi(data_inverted);
+
+wavelength = f(1).wl;
 phase = mod(angle(data),2*pi); % same as atan(imag(data)./real(data))
 phase_inverted = mod(angle(data_inverted),2*pi);
 amp = abs(data); % same as sqrt(real(data).^ + imag(data).^2)
@@ -108,7 +130,11 @@ ave = mean(amp.^2);
 phi0_inverted = phase_inverted(mid,:);
 delta_phi_inverted = diff(phase_inverted([end 1],:));
 ave_inverted = mean(amp_inverted.^2);
-%%
+% Task 4a. Do the same, but using the |f| struct array from Task 2a.
+
+
+% Plot the two matrices using different color
+
 max_ave = .8;
 idx = ave > max_ave;
 idx2 = ave_inverted > max_ave;
@@ -120,12 +146,11 @@ scatter(phi0_inverted(idx2)/pi, delta_phi_inverted(idx2)/pi, 36, 'r', "LineWidth
 xlabel('\phi_0, [\pi]'); ylabel('\Delta\phi, [\pi]')
 % Task 5. In a seprate subplots for inverted and non-inverted, colorcode data by height for a fixed period. Later, make a separate plot for each period. 
 
-% In this task, the loop will be a bit different
+% TO DO AT HOME ->> Loop over periods and make 3x2 plots
 period = periods(1);
 figure
 for hcurr = heights    
-    data = [];
-    data_inverted = [];
+    [data, data_inverted] = deal(cell(size(geom_names)));
     for iname = 1:length(geom_names)
         % folder path depends on your directory structure
         fname = ['datafiles/simdata/',geom_names{iname}, '_P', num2str(period), '_H', num2str(hcurr),'.mat'];
@@ -133,12 +158,17 @@ for hcurr = heights
             f = load(fname); 
         end
         if contains(fname,'inverted')
-            data_inverted = [data_inverted, f.data];
+            data_inverted{iname} = f.data;
         else
-            data = [data, f.data];
+            data{iname} = f.data;
         end
     end
-    
+    data = [data{:}];
+    data_inverted = [data_inverted{:}];
+    % what we want ->> TO DO AT HOME
+%     [phi0,delta_phi,ave] = get_phi_delta_phi(data);
+%     [phi0_inverted,delta_phi_inverted,ave_inverted] = get_phi_delta_phi(data_inverted);
+
     phase = mod(angle(data),2*pi); % same as atan(imag(data)./real(data))
     phase_inverted = mod(angle(data_inverted),2*pi);
     amp = abs(data); % same as sqrt(real(data).^ + imag(data).^2)
@@ -150,10 +180,8 @@ for hcurr = heights
     phi0_inverted = phase_inverted(mid,:);
     delta_phi_inverted = diff(phase_inverted([end 1],:));
     ave_inverted = mean(amp_inverted.^2);
-    % what we want
-%     [phi0,delta_phi,ave] = myfun(data);
-%     [phi0_inverted,delta_phi_inverted,ave_inverted] = myfun(data_inverted);
-    max_ave = .9;
+
+    max_ave = .0;
     idx = ave > max_ave;
     idx2 = ave_inverted > max_ave;
     
@@ -164,5 +192,12 @@ for hcurr = heights
     subplot(1,2,2)
     scatter(phi0_inverted(idx2)/pi, delta_phi_inverted(idx2)/pi, 36, "LineWidth", 1.5); 
     xlabel('\phi_0, [\pi]'); ylabel('\Delta\phi, [\pi]')
+    hold on
 end
-% Task 6. Create a new variable "volume fraction" and use it as color coding for the scatter plots (inverted and non-inverted separately).
+lgd_str = split(num2str(heights));
+lgd = legend(lgd_str{:},'Location','best');
+title(lgd,'Height, nm')
+% Task 5a. You guessed it! Do the same, but with the |f| cell array from Task 2a.
+
+
+% Task 6. Create a new variable "material volume" and use it as color coding for the scatter plots (inverted and non-inverted separately).
