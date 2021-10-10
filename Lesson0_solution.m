@@ -18,12 +18,6 @@ map = nan(size(X));
 I = R <= Rmax & R >= Rmin;
 map(I) = interp1(data(:,1),data(:,2),R(I),'linear');
 figure; pcolor(X,Y,mod(map,1)); shading flat; axis equal
-%% 
-% Or, using unwrapped data
-
-data(:,2) = unwrap(data(:,2)*2*pi)/2/pi;
-map(I) = interp1(data(:,1),data(:,2),R(I),'spline');
-figure; pcolor(X,Y,map); shading flat; colorbar; axis equal
 %%
 figure; pcolor(X,Y,mod(map,1)); shading flat; colorbar; axis equal
 % Task 2. Discretize the phase mask into N (6, 8, 16) levels between 0 and 1.
