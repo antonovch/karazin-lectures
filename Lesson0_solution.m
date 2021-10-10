@@ -37,4 +37,4 @@ I = ~isnan(map);
 map(I) = lvls(ilvl);
 figure; pcolor(X,Y,map); shading flat; colorbar; axis equal
 
-% Task 4. Plot resolved
+% Task 4. Plot 
