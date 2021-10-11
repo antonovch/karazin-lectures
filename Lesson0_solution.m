@@ -38,5 +38,5 @@ map(I) = lvls(ilvl);
 figure; pcolor(X,Y,map); shading flat; colorbar; axis equal
 
 %% Task 3. Test
-figure; pcolor(X,Y,map); shading flat; colorbar; axis equal
+figure; pcolor(X,Y,map2); colorbar; axis equal
 
