@@ -186,30 +186,69 @@ for period = periods
 end
 % Task 5a. You guessed it! Do the same, but with the |f| cell array from Task 2a.
 
-
+wavelength = f(1).wl;
+ind_fig = 1;
+figure
+for period = periods
+    for hcurr = heights
+        [data, data_inverted] = deal(cell(size(geom_names)));
+        for iname = 1:length(geom_names)
+            % folder path depends on your directory structure
+            filename = ['datafiles/simdata/',geom_names{iname}, '_P', num2str(period), '_H', num2str(hcurr),'.mat'];
+            i = find(strcmp({f.name}, filename));
+            if ~isempty(i)
+                if contains(f(i).name,'inverted')
+                    data_inverted{iname} = f(i).data;
+                else
+                    data{iname} = f(i).data;
+                end
+            end
+        end
+        data = [data{:}];
+        data_inverted = [data_inverted{:}];
+        [phi0,delta_phi,ave] = get_phi_delta_phi(data, wavelength);
+        [phi0_inverted,delta_phi_inverted,ave_inverted] = get_phi_delta_phi(data_inverted, wavelength);
+    
+        max_ave = .0;
+        idx = ave > max_ave;
+        idx2 = ave_inverted > max_ave;
+        
+        subplot(numel(periods),2,ind_fig)
+        scatter(phi0(idx)/pi, delta_phi(idx)/pi, 36, "LineWidth", 1.5); 
+        xlabel('\phi_0, [\pi]'); ylabel('\Delta\phi, [\pi]')
+        hold on
+        subplot(length(periods),2,ind_fig+1)
+        scatter(phi0_inverted(idx2)/pi, delta_phi_inverted(idx2)/pi, 36, "LineWidth", 1.5); 
+        xlabel('\phi_0, [\pi]'); ylabel('\Delta\phi, [\pi]')
+        hold on
+    end
+    if period == periods(1)
+        lgd_str = split(num2str(heights));
+        lgd = legend(lgd_str{:},'Location','best');
+        title(lgd,'Height, nm')
+    end
+    ind_fig = ind_fig + 2;
+end
 % Task 6. Create a new variable "material volume" and use it as color coding for the scatter plots.
 
-% TO DO AT HOME
-% 1. Make two additional loops over periods and heights
-% 2. gather all the data together, but instead of image fractions, frac,
-% have volume fraction: frac*period^2*height
-% 3. to use new volume fraction as a colordata, normalize it by max_volume
-% = periods(end)^2*heights(end);
-period = periods(3);
-height = heights(2);
-[data, frac] = deal(cell(size(geom_names)));
 N = 200;
-for iname = 1:length(geom_names)
-    % folder path depends on your directory structure
-    filename = ['datafiles/simdata/',geom_names{iname}, '_P', num2str(period), '_H', num2str(height),'.mat'];
-    
-    i = find(strcmp({f.name}, filename));
-    if ~isempty(i)
-        data{iname} = f(i).data;
-        frac{iname} = zeros(1,length(f(i).geom));
-        for j = 1:length(f(i).geom)
-            tmp = f(i).geom{j}(N);
-            frac{iname}(j) = sum(tmp(:))/numel(tmp);
+[data, frac] = deal(cell(size(f)));
+ind_file = 1;
+for period = periods
+    for height = heights
+        for iname = 1:length(geom_names)
+            % folder path depends on your directory structure
+            filename = ['datafiles/simdata/',geom_names{iname}, '_P', num2str(period), '_H', num2str(height),'.mat'];        
+            i = find(strcmp({f.name}, filename));
+            if ~isempty(i)
+                data{ind_file} = f(i).data;
+                frac{ind_file} = zeros(1,length(f(i).geom));
+                for j = 1:length(f(i).geom)
+                    tmp = f(i).geom{j}(N);
+                    frac{ind_file}(j) = sum(tmp(:))/numel(tmp) * period^2 * height / periods(end)^2 / heights(end);
+                end
+                ind_file = ind_file + 1;
+            end
         end
     end
 end
@@ -217,9 +256,10 @@ end
 data = [data{:}];
 frac = [frac{:}];
 [phi0,delta_phi,ave] = get_phi_delta_phi(data, wavelength);
-
+%%
+I = ave > 0.9;
 figure
-scatter(phi0/pi, delta_phi/pi, 36, frac, "LineWidth", 1.5); 
+scatter(phi0(I)/pi, delta_phi(I)/pi, 36, frac(I), "LineWidth", 1.5); 
 xlabel('\phi_0, [\pi]'); ylabel('\Delta\phi, [\pi]'); colormap(flipud(hot)); colorbar
 hold on
 %%
