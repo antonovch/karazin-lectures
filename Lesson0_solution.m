@@ -37,5 +37,6 @@ I = ~isnan(map);
 map(I) = lvls(ilvl);
 figure; pcolor(X,Y,map); shading flat; colorbar; axis equal
 
-%% New section
+%% Task 3. Test
 figure; pcolor(X,Y,map); shading flat; colorbar; axis equal
+
