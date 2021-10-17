@@ -68,12 +68,15 @@ data = [data{:}];
 % Task 2a. For speed pre-load all the files into memory (possible for relatively small amounts of data).
 
 % pre-allocate resources, by creating length(list) structures
-f = struct('name', list, 'data', cell(size(list)), 'geom', cell(size(list)), 'wl', cell(size(list)));
+f = struct('name', list, 'data', [], 'geom', [], 'wl', [], 'period', [], 'height', []);
 for i = 1:length(f)
     tmp = load(f(i).name); 
     f(i).data = tmp.data;
     f(i).geom = tmp.geom;
     f(i).wl = tmp.wl;
+    match = regexp(f(i).name,'_P(\d+)_H(\d+)','tokens');
+    match = cellfun(@str2num, match{1}, 'UniformOutput', false);
+    [f(i).period, f(i).height] = match{:};
 end
 % now, all data is in RAM, instead of being in disk
 % Task 3. Plot phase scatter plots for all the data as in Lesson 1.
