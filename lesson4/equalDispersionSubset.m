@@ -1,4 +1,4 @@
-function [I, phi_coeffs] = equalDispersionSubset(data, method, N)
+function [I, phi_coeffs] = equalDispersionSubset(data, wavelength, method, N)
 %equalDispersionSubset selects devices with most similar phase dispersion
 % and different phase offsets out of the dataset `data`.
 % Input arguments:
@@ -16,17 +16,20 @@ function [I, phi_coeffs] = equalDispersionSubset(data, method, N)
 %
 % The following algorithms are available (as indicated by their `method`
 % values):
+%   • 'minDistFixed1Ord' - calls minDistInParamSpaceFixedOffset...
+%   • 'minDist1Ord' - calls minDistInParamSpace...
+%   • 'minErrorPhase' - ...
 %   • ... TO DO DOCUMENTATION ... 
 
     if nargin < 3, N = 8; end
     
     switch method
-        case 1
-            % TO DO CODE ...
-        case 2
-            % TO DO CODE ...
-        case 3
-            % TO DO CODE ...
+        case 'minDistFixed1Ord'
+            [I, phi_coeffs] = minDistInParamSpaceFixedOffset(data, wavelength, N, 1);
+        case 'minDist1Ord'
+            [I, phi_coeffs] = minDistInParamSpace(data, wavelength, N, 1);
+        case 'minErrorPhase'
+            [I, phi_coeffs] = minErrorInPhase(data, wavelength, N, 2);
         case 4
             % TO DO CODE ...
     end
