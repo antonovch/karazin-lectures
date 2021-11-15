@@ -36,3 +36,6 @@ I = ~isnan(map);
 [~, ilvl] = min(abs(map(I)-lvls),[],2);
 map(I) = lvls(ilvl);
 figure; pcolor(X,Y,map); shading flat; colorbar; axis equal
+
+%% Task 3. New section
+figure; pcolor(X,Y,map); shading flat; colorbar; axis auto
